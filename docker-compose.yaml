@@ -1,0 +1,90 @@
+version: "3.9"
+services:
+  jupyterlab:
+    image: jupyterlab:latest
+    container_name: jupyterlab_da
+    build:
+      context: services/jupyterlab/
+      dockerfile: Dockerfile
+    env_file:
+      - ./config/.env
+    volumes:
+      - ./volumes/jupyter/notebooks/:/opt/workspace/
+      - ./data/:/data/
+    ports:
+      - 8888:8888
+    networks:
+      - lakehouse_a3
+
+  dremio:
+    container_name: dremio_da
+    image: dremio/dremio-oss:24.2.6
+    platform: linux/x86_64
+    ports:
+      - 9047:9047
+      - 31010:31010
+      - 32010:32010
+    volumes:
+      - ./volumes/dremio/:/opt/dremio/data
+    networks:
+      - lakehouse_a3
+
+  nessie:
+    container_name: nessie_da
+    image: projectnessie/nessie:0.74.0
+    ports:
+      - 19120:19120
+    environment:
+      - NESSIE_VERSION_STORE_TYPE=JDBC
+      - NESSIE_VERSION_STORE_JDBC_URL=jdbc:postgresql://postgres:5432/lakehouse_a3
+      - NESSIE_VERSION_STORE_JDBC_USER=dashaqui
+      - NESSIE_VERSION_STORE_JDBC_PASS=dashaqui
+    depends_on:
+      - postgres
+    networks:
+      - lakehouse_a3
+
+  minio:
+    container_name: minio_da
+    image: minio/minio
+    ports:
+      - 9000:9000
+      - 9001:9001
+    env_file:
+      - ./config/.env
+    volumes:
+      - ./volumes/minio/:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - lakehouse_a3
+
+  postgres:
+    container_name: postgres_da
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=dashaqui
+      - POSTGRES_PASSWORD=dashaqui
+      - POSTGRES_DB=lakehouse_a3
+    volumes:
+      - "./volumes/postgres:/var/lib/postgresql/data:rw"
+    ports:
+      - "5432:5432"
+    networks:
+      - lakehouse_a3
+
+  pgadmin:
+    container_name: pgadmin_da
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=dashaqui@dashaqui.com
+      - PGADMIN_DEFAULT_PASSWORD=dashaqui
+    volumes:
+      - "./volumes/pg_admin:/var/lib/pgadmin:rw"
+    ports:
+      - "8070:80"
+    networks:
+      - lakehouse_a3
+
+networks:
+  lakehouse_a3:
+    driver: bridge
