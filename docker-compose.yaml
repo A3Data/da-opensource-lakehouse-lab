@@ -36,9 +36,9 @@ services:
       - 19120:19120
     environment:
       - NESSIE_VERSION_STORE_TYPE=JDBC
-      - NESSIE_VERSION_STORE_JDBC_URL=jdbc:postgresql://postgres:5432/lakehouse_a3
-      - NESSIE_VERSION_STORE_JDBC_USER=dashaqui
-      - NESSIE_VERSION_STORE_JDBC_PASS=dashaqui
+      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://postgres:5432/lakehouse_a3
+      - QUARKUS_DATASOURCE_USERNAME=dashaqui
+      - QUARKUS_DATASOURCE_PASSWORD=dashaqui
     depends_on:
       - postgres
     networks:
