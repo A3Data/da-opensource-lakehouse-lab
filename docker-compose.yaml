@@ -41,6 +41,7 @@ services:
       - QUARKUS_DATASOURCE_PASSWORD=dashaqui
     depends_on:
       - postgres
+      - pgadmin
     networks:
       - lakehouse_a3
 
